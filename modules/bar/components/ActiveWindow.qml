@@ -13,6 +13,29 @@ Item {
     required property Brightness.Monitor monitor
     property color colour: Colours.palette.m3primary
 
+    // 1. Get Workspace ID (Default to 1 if null)
+    readonly property int wsId: Hypr.focusedMonitor.activeWorkspace?.id ?? 1
+
+    // 2. Calculate Group (Rows of 10)
+    readonly property int group: Math.floor((wsId - 1) / 10) + 1
+    
+    // 3. Calculate Relative Workspace (1-10)
+    readonly property int relWs: ((wsId - 1) % 10) + 1
+
+    // 4. Define custom names for groups
+    function getGroupName() {
+        if (group === 1) return "Mon1"      // Don't show name for Group 1 (Main)
+        if (group === 2) return "Mon2"
+        return "G" + group              // Fallback: G4, G5, etc.
+    }
+    
+    // 5. Build the display string
+    readonly property string wsDisplay: {
+        let name = getGroupName()
+        if (name === "") return "[" + relWs + "] " 
+        return "[" + name + ":" + relWs + "] "
+    }
+
     readonly property int maxHeight: {
         const otherModules = bar.children.filter(c => c.id && c.item !== this && c.id !== "spacer");
         const otherHeight = otherModules.reduce((acc, curr) => acc + (curr.item.nonAnimHeight ?? curr.height), 0);
@@ -46,7 +69,7 @@ Item {
     TextMetrics {
         id: metrics
 
-        text: Hypr.activeToplevel?.title ?? qsTr("Desktop")
+        text: root.wsDisplay + (Hypr.activeToplevel?.title ?? qsTr("Desktop"))
         font.pointSize: Appearance.font.size.smaller
         font.family: Appearance.font.family.mono
         elide: Qt.ElideRight
