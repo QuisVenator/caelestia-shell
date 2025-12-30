@@ -557,15 +557,15 @@ default, you must create it manually.
         "hideDelay": 2000
     },
     "paths": {
-        "mediaGif": "root:/assets/bongocat.gif",
-        "sessionGif": "root:/assets/kurukuru.gif",
+        "mediaGif": "root:/assets/penguin-vibing.gif",
+        "sessionGif": "root:/assets/controller.gif",
         "wallpaperDir": "~/Pictures/Wallpapers"
     },
     "services": {
         "audioIncrement": 0.1,
         "brightnessIncrement": 0.1,
         "maxVolume": 1.0,
-        "defaultPlayer": "Spotify",
+        "defaultPlayer": "YT Music",
         "gpuType": "",
         "playerAliases": [{ "from": "com.github.th_ch.youtube_music", "to": "YT Music" }],
         "weatherLocation": "",
