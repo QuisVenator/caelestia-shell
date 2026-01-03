@@ -28,7 +28,7 @@ Singleton {
             });
     }
 
-    onLocChanged: Requests.get(`https://wttr.in/${loc}?format=j1`, text => {
+    onLocChanged: Requests.get(`http://wttr.in/${loc}?format=j1`, text => {
         const json = JSON.parse(text);
         cc = json.current_condition[0];
         forecast = json.weather;
