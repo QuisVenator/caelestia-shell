@@ -1,10 +1,10 @@
 pragma ComponentBehavior: Bound
 
+import QtQuick
+import Caelestia.Config
 import qs.components
 import qs.services
 import qs.utils
-import qs.config
-import QtQuick
 
 Item {
     id: root
@@ -13,27 +13,17 @@ Item {
     required property Brightness.Monitor monitor
     property color colour: Colours.palette.m3primary
 
-    // 1. Get Workspace ID (Default to 1 if null)
-    readonly property int wsId: Hypr.focusedMonitor.activeWorkspace?.id ?? 1
-
-    // 2. Calculate Group (Rows of 10)
-    readonly property int group: Math.floor((wsId - 1) / 10) + 1
-    
-    // 3. Calculate Relative Workspace (1-10)
-    readonly property int relWs: ((wsId - 1) % 10) + 1
-
-    // 4. Define custom names for groups
-    function getGroupName() {
-        if (group === 1) return "Mon1"      // Don't show name for Group 1 (Main)
-        if (group === 2) return "Mon2"
-        return "G" + group              // Fallback: G4, G5, etc.
-    }
-    
-    // 5. Build the display string
-    readonly property string wsDisplay: {
-        let name = getGroupName()
-        if (name === "") return "[" + relWs + "] " 
-        return "[" + name + ":" + relWs + "] "
+    readonly property string windowTitle: {
+        const title = Hypr.activeToplevel?.title;
+        if (!title)
+            return qsTr("Desktop");
+        if (Config.bar.activeWindow.compact) {
+            // " - " (standard hyphen), " — " (em dash), " – " (en dash)
+            const parts = title.split(/\s+[\-\u2013\u2014]\s+/);
+            if (parts.length > 1)
+                return parts[parts.length - 1].trim();
+        }
+        return title;
     }
 
     readonly property int maxHeight: {
@@ -47,6 +37,32 @@ Item {
     clip: true
     implicitWidth: Math.max(icon.implicitWidth, current.implicitHeight)
     implicitHeight: icon.implicitHeight + current.implicitWidth + current.anchors.topMargin
+
+    Loader {
+        asynchronous: true
+        anchors.fill: parent
+        active: !Config.bar.activeWindow.showOnHover
+
+        sourceComponent: MouseArea {
+            cursorShape: Qt.PointingHandCursor
+            hoverEnabled: true
+            onPositionChanged: {
+                const popouts = root.bar.popouts;
+                if (popouts.hasCurrent && popouts.currentName !== "activewindow")
+                    popouts.hasCurrent = false;
+            }
+            onClicked: {
+                const popouts = root.bar.popouts;
+                if (popouts.hasCurrent) {
+                    popouts.hasCurrent = false;
+                } else {
+                    popouts.currentName = "activewindow";
+                    popouts.currentCenter = root.mapToItem(root.bar, 0, root.implicitHeight / 2).y;
+                    popouts.hasCurrent = true;
+                }
+            }
+        }
+    }
 
     MaterialIcon {
         id: icon
@@ -69,9 +85,9 @@ Item {
     TextMetrics {
         id: metrics
 
-        text: root.wsDisplay + (Hypr.activeToplevel?.title ?? qsTr("Desktop"))
-        font.pointSize: Appearance.font.size.smaller
-        font.family: Appearance.font.family.mono
+        text: root.windowTitle
+        font.pointSize: root.Tokens.font.size.smaller
+        font.family: root.Tokens.font.family.mono
         elide: Qt.ElideRight
         elideWidth: root.maxHeight - icon.height
 
@@ -85,8 +101,7 @@ Item {
 
     Behavior on implicitHeight {
         Anim {
-            duration: Appearance.anim.durations.expressiveDefaultSpatial
-            easing.bezierCurve: Appearance.anim.curves.expressiveDefaultSpatial
+            type: Anim.DefaultSpatial
         }
     }
 
@@ -95,7 +110,7 @@ Item {
 
         anchors.horizontalCenter: icon.horizontalCenter
         anchors.top: icon.bottom
-        anchors.topMargin: Appearance.spacing.small
+        anchors.topMargin: Tokens.spacing.small
 
         font.pointSize: metrics.font.pointSize
         font.family: metrics.font.family
@@ -104,10 +119,10 @@ Item {
 
         transform: [
             Translate {
-                x: Config.bar.activeWindow.inverted ? -implicitWidth + text.implicitHeight : 0
+                x: root.Config.bar.activeWindow.inverted ? -text.implicitWidth + text.implicitHeight : 0
             },
             Rotation {
-                angle: Config.bar.activeWindow.inverted ? 270 : 90
+                angle: root.Config.bar.activeWindow.inverted ? 270 : 90
                 origin.x: text.implicitHeight / 2
                 origin.y: text.implicitHeight / 2
             }
