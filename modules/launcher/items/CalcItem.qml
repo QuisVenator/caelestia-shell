@@ -83,8 +83,6 @@ Item {
                     Quickshell.execDetached(["app2unit", "--", ...Config.general.apps.terminal, "zsh", "-c", `qalc -i '${root.math}'`]);
                     root.list.visibilities.launcher = false;
                 }
-
-                color: Colours.palette.m3onTertiary
             }
 
             StyledText {
