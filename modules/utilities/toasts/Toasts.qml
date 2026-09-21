@@ -16,14 +16,14 @@ Item {
     function shouldShowToast(toast: Toast): bool {
         if (!Notifs.hasFullscreen())
             return true;
-        if (Config.utilities.toasts.fullscreen === "all")
+        if (GlobalConfig.utilities.toasts.fullscreen === "all")
             return true;
-        if (Config.utilities.toasts.fullscreen === "important")
+        if (GlobalConfig.utilities.toasts.fullscreen === "important")
             return toast.type === Toast.Warning || toast.type === Toast.Error;
         return false;
     }
 
-    implicitWidth: Tokens.sizes.utilities.toastWidth - Tokens.padding.normal * 2
+    implicitWidth: Tokens.sizes.utilities.toastWidth - Tokens.padding.medium * 2
     implicitHeight: {
         let h = -spacing;
         for (let i = 0; i < repeater.count; i++) {
@@ -111,7 +111,6 @@ Item {
             properties: "opacity,scale"
             from: 0
             to: 1
-            type: Anim.DefaultSpatial
         }
 
         ParallelAnimation {
@@ -120,6 +119,7 @@ Item {
             onFinished: toast.modelData.unlock(toast)
 
             Anim {
+                type: Anim.DefaultEffects
                 target: toast
                 property: "opacity"
                 to: 0
@@ -138,7 +138,9 @@ Item {
         }
 
         Behavior on opacity {
-            Anim {}
+            Anim {
+                type: Anim.DefaultEffects
+            }
         }
 
         Behavior on scale {
@@ -146,9 +148,7 @@ Item {
         }
 
         Behavior on anchors.bottomMargin {
-            Anim {
-                type: Anim.DefaultSpatial
-            }
+            Anim {}
         }
     }
 }
